@@ -1,3 +1,27 @@
-﻿@page "/"
+﻿@using CliWrap;
+@using System.Text;
+@using System.Diagnostics;
+@page "/"
 
-<h1>Hello, world!</h1>
+<button @onclick="ffmpeg">Test</button>
+<h1>AniScrape</h1>
+
+
+@code{
+    private StringBuilder StdOutBuffer = new();
+    private StringBuilder StdErrBuffer = new();
+    private const string FFMPEGBin = @"./Binaries/ffmpeg.exe";
+
+    async void ffmpeg()
+    {
+        await Cli.Wrap(FFMPEGBin)
+        .WithArguments("-h")
+        .WithValidation(CommandResultValidation.ZeroExitCode)
+                     .WithStandardOutputPipe(PipeTarget.ToStringBuilder(StdOutBuffer))
+                     .WithStandardErrorPipe(PipeTarget.ToStringBuilder(StdErrBuffer))
+                         .ExecuteAsync();
+
+        Debug.WriteLine(StdOutBuffer.ToString());
+        Debug.WriteLine(StdErrBuffer.ToString());
+    }
+}
